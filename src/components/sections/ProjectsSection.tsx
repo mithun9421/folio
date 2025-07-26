@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Github, Eye, Award, Users, Zap } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface Project {
   id: string;
@@ -138,6 +139,7 @@ const projects: Project[] = [
 const categories = ["All", "Privacy & Compliance", "Monitoring & Observability", "AI & Privacy", "Developer Tools"];
 
 const ProjectsSection = () => {
+  const { theme } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
@@ -155,7 +157,7 @@ const ProjectsSection = () => {
   };
 
   return (
-    <section id="projects" className="py-20 bg-gradient-to-br from-black via-gray-900 to-slate-900">
+    <section id="projects" className={`py-20 bg-gradient-to-br ${theme.background}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <SectionTransition className="text-center mb-16">
@@ -176,7 +178,11 @@ const ProjectsSection = () => {
                 key={category}
                 variant={selectedCategory === category ? "default" : "outline"}
                 onClick={() => setSelectedCategory(category)}
-                className="transition-all duration-300"
+                className={`transition-all duration-300 ${
+                  selectedCategory === category 
+                    ? `bg-gradient-to-r ${theme.primary} text-white border-0` 
+                    : ""
+                }`}
               >
                 {category}
               </Button>
@@ -197,17 +203,17 @@ const ProjectsSection = () => {
                   exit={{ opacity: 0, y: -30 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <Card className="bg-gray-800/50 border-gray-700 hover:border-gray-600 h-full group cursor-pointer transition-all duration-300 hover:scale-105">
+                  <Card className={`${theme.surface} hover:border-gray-600 h-full group cursor-pointer transition-all duration-300 hover:scale-105`}>
                     <CardHeader className="pb-4">
                       <div className="flex justify-between items-start mb-3">
                         <Badge className={`${getStatusColor(project.status)} border`}>
                           {project.status.replace("-", " ")}
                         </Badge>
-                        <Badge variant="secondary" className="bg-purple-500/20 text-purple-300 border-purple-500/30">
+                        <Badge variant="secondary" className={`bg-gradient-to-r ${theme.secondary}/20 text-gray-200 border-gray-600`}>
                           {project.category}
                         </Badge>
                       </div>
-                      <h3 className="text-2xl font-bold text-white group-hover:text-blue-400 transition-colors">
+                      <h3 className={`text-2xl font-bold text-white group-hover:${theme.text} transition-colors`}>
                         {project.title}
                       </h3>
                       <p className="text-gray-400 leading-relaxed">
@@ -217,8 +223,8 @@ const ProjectsSection = () => {
 
                     <CardContent className="pt-0">
                       {/* Impact Metrics */}
-                      <div className="mb-4 p-3 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg border border-blue-500/20">
-                        <div className="flex items-center text-blue-400 text-sm font-semibold mb-1">
+                      <div className={`mb-4 p-3 bg-gradient-to-r ${theme.primary}/10 rounded-lg border ${theme.border}`}>
+                        <div className={`flex items-center ${theme.textSecondary} text-sm font-semibold mb-1`}>
                           <Award className="w-4 h-4 mr-2" />
                           Impact
                         </div>
@@ -266,7 +272,7 @@ const ProjectsSection = () => {
                       <div className="flex gap-3">
                         <Button
                           size="sm"
-                          className="flex-1"
+                          className={`flex-1 bg-gradient-to-r ${theme.primary} text-white border-0`}
                           onClick={() => setSelectedProject(project)}
                         >
                           <Eye className="w-4 h-4 mr-2" />
@@ -337,7 +343,7 @@ const ProjectsSection = () => {
                       <ul className="space-y-2">
                         {selectedProject.highlights.map((highlight, idx) => (
                           <li key={idx} className="flex items-center text-gray-300">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full mr-3" />
+                            <div className={`w-2 h-2 bg-gradient-to-r ${theme.primary} rounded-full mr-3`} />
                             {highlight}
                           </li>
                         ))}
@@ -360,8 +366,8 @@ const ProjectsSection = () => {
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-4 rounded-lg border border-blue-500/20">
-                    <div className="flex items-center text-blue-400 font-semibold mb-2">
+                  <div className={`bg-gradient-to-r ${theme.primary}/10 p-4 rounded-lg border ${theme.border}`}>
+                    <div className={`flex items-center ${theme.textSecondary} font-semibold mb-2`}>
                       <Award className="w-5 h-5 mr-2" />
                       Project Impact
                     </div>

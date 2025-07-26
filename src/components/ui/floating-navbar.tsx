@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   motion,
   AnimatePresence,
@@ -7,7 +7,6 @@ import {
   useMotionValueEvent,
 } from "framer-motion";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 
 export const FloatingNav = ({
   navItems,
@@ -21,8 +20,8 @@ export const FloatingNav = ({
   className?: string;
 }) => {
   const { scrollYProgress } = useScroll();
-
   const [visible, setVisible] = useState(false);
+  const [activeSection, setActiveSection] = useState("");
 
   useMotionValueEvent(scrollYProgress, "change", (current) => {
     if (typeof current === "number") {
@@ -40,6 +39,39 @@ export const FloatingNav = ({
     }
   });
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = ["hero", "skills", "projects", "contact"];
+      const scrollPosition = window.scrollY + window.innerHeight / 2;
+
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const offsetTop = element.offsetTop;
+          const offsetBottom = offsetTop + element.offsetHeight;
+
+          if (scrollPosition >= offsetTop && scrollPosition < offsetBottom) {
+            setActiveSection(section);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Check initial position
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleNavClick = (link: string) => {
+    const targetId = link.replace("#", "");
+    const element = document.getElementById(targetId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
@@ -55,23 +87,41 @@ export const FloatingNav = ({
           duration: 0.2,
         }}
         className={cn(
-          "flex max-w-fit fixed top-10 inset-x-0 mx-auto border border-transparent dark:border-white/[0.2] rounded-full dark:bg-black bg-white shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)] z-[5000] pr-2 pl-8 py-2 items-center justify-center space-x-4",
+          "flex max-w-fit fixed top-10 inset-x-0 mx-auto border border-blue-500/20 rounded-full bg-black/80 backdrop-blur-md shadow-lg shadow-blue-500/20 z-[5000] pr-2 pl-8 py-2 items-center justify-center space-x-4",
           className
         )}
       >
-        {navItems.map((navItem, idx: number) => (
-          <Link
-            key={`link=${idx}`}
-            href={navItem.link}
-            className={cn(
-              "relative dark:text-neutral-50 items-center flex space-x-1 text-neutral-600 dark:hover:text-neutral-300 hover:text-neutral-500"
-            )}
-          >
-            <span className="block sm:hidden">{navItem.icon}</span>
-            <span className="hidden sm:block text-sm">{navItem.name}</span>
-          </Link>
-        ))}
-        <button className="border text-sm font-medium relative border-neutral-200 dark:border-white/[0.2] text-black dark:text-white px-4 py-2 rounded-full">
+        {navItems.map((navItem, idx: number) => {
+          const isActive = activeSection === navItem.link.replace("#", "");
+          return (
+            <button
+              key={`link=${idx}`}
+              onClick={() => handleNavClick(navItem.link)}
+              className={cn(
+                "relative items-center flex space-x-1 px-3 py-2 rounded-full transition-all duration-300",
+                isActive
+                  ? "text-blue-400 bg-blue-500/20"
+                  : "text-gray-300 hover:text-blue-400 hover:bg-blue-500/10"
+              )}
+            >
+              <span className="block sm:hidden">{navItem.icon}</span>
+              <span className="hidden sm:block text-sm font-medium">{navItem.name}</span>
+              {isActive && (
+                <motion.div
+                  layoutId="activeSection"
+                  className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full border border-blue-500/30"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                />
+              )}
+            </button>
+          );
+        })}
+        <button 
+          onClick={() => handleNavClick("#contact")}
+          className="border text-sm font-medium relative border-blue-500/30 text-blue-400 px-4 py-2 rounded-full hover:bg-blue-500/10 transition-all duration-300"
+        >
           <span>Contact</span>
           <span className="absolute inset-x-0 w-1/2 mx-auto -bottom-px bg-gradient-to-r from-transparent via-blue-500 to-transparent h-px" />
         </button>

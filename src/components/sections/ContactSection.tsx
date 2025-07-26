@@ -17,7 +17,11 @@ import {
   Coffee,
   Briefcase,
   MessageSquare,
+  ExternalLink,
+  Copy,
+  Check,
 } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface ContactForm {
   name: string;
@@ -28,6 +32,7 @@ interface ContactForm {
 }
 
 const ContactSection = () => {
+  const { theme } = useTheme();
   const [form, setForm] = useState<ContactForm>({
     name: "",
     email: "",
@@ -38,6 +43,7 @@ const ContactSection = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [copiedEmail, setCopiedEmail] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,14 +72,20 @@ const ContactSection = () => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const copyEmail = async () => {
+    await navigator.clipboard.writeText("mithunmuralee94@gmail.com");
+    setCopiedEmail(true);
+    setTimeout(() => setCopiedEmail(false), 2000);
+  };
+
   const contactInfo = [
-    {
-      icon: Mail,
-      label: "Email",
-      value: "mithunmuralee94@gmail.com",
-      href: "mailto:mithunmuralee94@gmail.com",
-      color: "from-blue-400 to-cyan-500",
-    },
+    // {
+    //   icon: Mail,
+    //   label: "Email",
+    //   value: "mithunmuralee94@gmail.com",
+    //   href: "mailto:mithunmuralee94@gmail.com",
+    //   color: "from-blue-400 to-cyan-500",
+    // },
     {
       icon: Linkedin,
       label: "LinkedIn",
@@ -107,15 +119,15 @@ const ContactSection = () => {
   return (
     <section
       id="contact"
-      className="py-20 bg-gradient-to-br from-slate-900 via-purple-900/20 to-black"
+      className={`py-16 bg-gradient-to-br ${theme.background}`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <SectionTransition className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-6">
+        <SectionTransition className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-4">
             Let&apos;s Connect
           </h2>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-8">
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-6">
             Open to new opportunities, collaborations, and interesting
             conversations about technology, privacy engineering, and building
             scalable solutions.
@@ -126,42 +138,80 @@ const ContactSection = () => {
           </Badge>
         </SectionTransition>
 
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Contact Information */}
-          <SectionTransition>
-            <div className="space-y-8">
-              <div>
-                <h3 className="text-2xl font-bold text-white mb-6">
-                  Get in Touch
+        {/* Quick Contact Banner */}
+        <SectionTransition className="mb-12">
+          <Card className={`bg-gradient-to-r ${theme.primary}/10 ${theme.border} p-6`}>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="text-center md:text-left">
+                <h3 className="text-xl font-bold text-white mb-2">
+                  Ready to start a conversation?
                 </h3>
-                <p className="text-gray-400 mb-8 leading-relaxed">
-                  Whether you&apos;re looking to discuss a potential
-                  opportunity, collaborate on an exciting project, or simply
-                  want to chat about the latest in privacy engineering and
-                  observability, I&apos;d love to hear from you.
+                <p className="text-gray-300">
+                  Drop me an email directly or use the form below
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={copyEmail}
+                  variant="outline"
+                  className={`${theme.border} ${theme.textSecondary} hover:bg-gray-800 flex items-center gap-2`}
+                >
+                  {copiedEmail ? (
+                    <Check className="w-4 h-4" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                  {copiedEmail ? "Copied!" : "Copy Email"}
+                </Button>
+                <Button
+                  onClick={() =>
+                    window.open("mailto:mithunmuralee94@gmail.com", "_blank")
+                  }
+                  className={`bg-gradient-to-r ${theme.primary} text-white border-0 flex items-center gap-2`}
+                >
+                  <Mail className="w-4 h-4" />
+                  Send Email
+                  <ExternalLink className="w-3 h-3" />
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </SectionTransition>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Contact Information - Compact */}
+          <SectionTransition className="lg:col-span-1">
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-bold text-white mb-4">
+                  Connect With Me
+                </h3>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  Let's discuss opportunities, collaborations, or chat about
+                  privacy engineering and observability.
                 </p>
               </div>
 
-              {/* Contact Methods */}
-              <div className="grid gap-4">
+              {/* Contact Methods - Compact Grid */}
+              <div className="space-y-3">
                 {contactInfo.map((contact, index) => (
                   <motion.div
                     key={contact.label}
-                    initial={{ opacity: 0, x: -30 }}
+                    initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    transition={{ duration: 0.4, delay: index * 0.1 }}
                   >
-                    <Card className="bg-gray-800/50 border-gray-700 hover:border-gray-600 transition-all duration-300 group">
-                      <CardContent className="p-4">
+                    <Card className={`${theme.surface} hover:border-gray-600 transition-all duration-300 group`}>
+                      <CardContent className="p-3">
                         <div className="flex items-center">
                           <div
-                            className={`w-12 h-12 rounded-full bg-gradient-to-r ${contact.color} flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300`}
+                            className={`w-8 h-8 rounded-lg bg-gradient-to-r ${contact.color} flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300`}
                           >
-                            <contact.icon className="w-6 h-6 text-white" />
+                            <contact.icon className="w-4 h-4 text-white" />
                           </div>
-                          <div className="flex-1">
-                            <h4 className="text-white font-semibold">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-white font-medium text-sm">
                               {contact.label}
                             </h4>
                             {contact.href ? (
@@ -169,16 +219,19 @@ const ContactSection = () => {
                                 href={contact.href}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-gray-400 hover:text-blue-400 transition-colors"
+                                className="text-gray-400 hover:text-blue-400 transition-colors text-xs truncate block"
                               >
                                 {contact.value}
                               </a>
                             ) : (
-                              <span className="text-gray-400">
+                              <span className="text-gray-400 text-xs">
                                 {contact.value}
                               </span>
                             )}
                           </div>
+                          {contact.href && (
+                            <ExternalLink className="w-3 h-3 text-gray-500 group-hover:text-gray-300 transition-colors" />
+                          )}
                         </div>
                       </CardContent>
                     </Card>
@@ -186,45 +239,43 @@ const ContactSection = () => {
                 ))}
               </div>
 
-              {/* Quick Stats */}
-              <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg p-6 border border-blue-500/20">
-                <h4 className="text-white font-semibold mb-4">Response Time</h4>
-                <div className="grid grid-cols-2 gap-4 text-center">
+              {/* Quick Stats - Compact */}
+              <div className={`bg-gradient-to-r ${theme.primary}/10 rounded-lg p-4 border ${theme.border}`}>
+                <h4 className="text-white font-medium mb-3 text-sm">
+                  Response Time
+                </h4>
+                <div className="flex justify-between text-center">
                   <div>
-                    <div className="text-2xl font-bold text-blue-400">24h</div>
-                    <div className="text-gray-400 text-sm">
-                      Typical Response
-                    </div>
+                    <div className={`text-lg font-bold bg-gradient-to-r ${theme.accent} bg-clip-text text-transparent`}>24h</div>
+                    <div className="text-gray-400 text-xs">Response</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold text-purple-400">
-                      95%
-                    </div>
-                    <div className="text-gray-400 text-sm">Response Rate</div>
+                    <div className={`text-lg font-bold bg-gradient-to-r ${theme.accent} bg-clip-text text-transparent`}>95%</div>
+                    <div className="text-gray-400 text-xs">Rate</div>
                   </div>
                 </div>
               </div>
             </div>
           </SectionTransition>
 
-          {/* Contact Form */}
-          <SectionTransition delay={0.2}>
-            <Card className="bg-gray-800/50 border-gray-700">
+          {/* Contact Form - Spans 2 columns */}
+          <SectionTransition delay={0.2} className="lg:col-span-2">
+            <Card className={`${theme.surface}`}>
               <CardHeader>
-                <h3 className="text-2xl font-bold text-white">Send Message</h3>
-                <p className="text-gray-400">
+                <h3 className="text-xl font-bold text-white">Send Message</h3>
+                <p className="text-gray-400 text-sm">
                   Fill out the form below and I&apos;ll get back to you soon.
                 </p>
               </CardHeader>
               <CardContent>
                 {!submitted ? (
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Inquiry Type */}
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    {/* Inquiry Type - Compact */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-3">
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
                         What&apos;s this about?
                       </label>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                         {inquiryTypes.map((type) => (
                           <button
                             key={type.value}
@@ -232,20 +283,20 @@ const ContactSection = () => {
                             onClick={() =>
                               handleInputChange("inquiryType", type.value)
                             }
-                            className={`p-3 rounded-lg border text-sm font-medium transition-all duration-300 flex items-center justify-center ${
+                            className={`p-2 rounded-lg border text-xs font-medium transition-all duration-300 flex items-center justify-center ${
                               form.inquiryType === type.value
-                                ? "bg-blue-500/20 border-blue-500 text-blue-400"
+                                ? `bg-gradient-to-r ${theme.primary}/20 ${theme.border} ${theme.textSecondary}`
                                 : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-gray-500"
                             }`}
                           >
-                            <type.icon className="w-4 h-4 mr-2" />
+                            <type.icon className="w-3 h-3 mr-1" />
                             {type.label}
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    {/* Name and Email */}
+                    {/* Name and Email - Compact */}
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -259,7 +310,7 @@ const ContactSection = () => {
                             handleInputChange("name", e.target.value)
                           }
                           required
-                          className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500"
+                          className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500 h-10"
                         />
                       </div>
                       <div>
@@ -274,12 +325,12 @@ const ContactSection = () => {
                             handleInputChange("email", e.target.value)
                           }
                           required
-                          className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500"
+                          className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500 h-10"
                         />
                       </div>
                     </div>
 
-                    {/* Subject */}
+                    {/* Subject - Compact */}
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         Subject *
@@ -292,11 +343,11 @@ const ContactSection = () => {
                           handleInputChange("subject", e.target.value)
                         }
                         required
-                        className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500"
+                        className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500 h-10"
                       />
                     </div>
 
-                    {/* Message */}
+                    {/* Message - Reduced height */}
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         Message *
@@ -308,7 +359,7 @@ const ContactSection = () => {
                           handleInputChange("message", e.target.value)
                         }
                         required
-                        rows={6}
+                        rows={4}
                         className="bg-gray-700/50 border-gray-600 text-white placeholder:text-gray-400 focus:border-blue-500 resize-none"
                       />
                     </div>
@@ -318,7 +369,7 @@ const ContactSection = () => {
                       type="submit"
                       size="lg"
                       disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0 font-semibold transition-all duration-300"
+                      className={`w-full bg-gradient-to-r ${theme.primary} text-white border-0 font-semibold transition-all duration-300`}
                     >
                       {isSubmitting ? (
                         <motion.div
@@ -340,14 +391,14 @@ const ContactSection = () => {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-12"
+                    className="text-center py-8"
                   >
-                    <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                       <motion.svg
                         initial={{ pathLength: 0 }}
                         animate={{ pathLength: 1 }}
                         transition={{ duration: 0.8 }}
-                        className="w-8 h-8 text-green-400"
+                        className="w-6 h-6 text-green-400"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -360,10 +411,10 @@ const ContactSection = () => {
                         />
                       </motion.svg>
                     </div>
-                    <h4 className="text-xl font-bold text-white mb-2">
+                    <h4 className="text-lg font-bold text-white mb-2">
                       Message Sent!
                     </h4>
-                    <p className="text-gray-400">
+                    <p className="text-gray-400 text-sm">
                       Thanks for reaching out. I&apos;ll get back to you within
                       24 hours.
                     </p>

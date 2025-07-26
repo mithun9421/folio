@@ -1,7 +1,7 @@
 "use client";
-import React, { useRef, useMemo } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Text, OrbitControls, Float, MeshDistortMaterial } from "@react-three/drei";
+import React, { useRef, useMemo, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Text, OrbitControls, Float, MeshDistortMaterial, Sphere } from "@react-three/drei";
 import * as THREE from "three";
 
 interface SkillNode {
@@ -42,52 +42,140 @@ const skillsData: SkillNode[] = [
   { name: "GitHub Actions", position: [-3, 0, -1.5], color: "#2088FF", size: 0.8, category: "devops" },
 ];
 
-function SkillSphere({ skill }: { skill: SkillNode }) {
+function SkillSphere({ skill, onClick }: { skill: SkillNode; onClick: (skill: SkillNode) => void }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const textRef = useRef<THREE.Mesh>(null);
+  const glowRef = useRef<THREE.Mesh>(null);
+  const [hovered, setHovered] = useState(false);
 
   useFrame((state) => {
     if (meshRef.current) {
       meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
       meshRef.current.rotation.y += 0.01;
+      
+      // Pulsing effect
+      const pulse = Math.sin(state.clock.elapsedTime * 3) * 0.1 + 1;
+      meshRef.current.scale.setScalar(pulse);
     }
     if (textRef.current) {
       textRef.current.lookAt(state.camera.position);
     }
+    if (glowRef.current) {
+      // Rotating glow ring
+      glowRef.current.rotation.z += 0.02;
+      const glowPulse = Math.sin(state.clock.elapsedTime * 2) * 0.3 + 0.7;
+      glowRef.current.scale.setScalar(glowPulse);
+    }
   });
 
   return (
-    <Float speed={2} rotationIntensity={0.1} floatIntensity={0.5}>
+    <Float speed={2} rotationIntensity={0.2} floatIntensity={0.8}>
       <group position={skill.position}>
-        <mesh ref={meshRef}>
-          <sphereGeometry args={[skill.size * 0.5, 32, 16]} />
-          <MeshDistortMaterial
-            color={skill.color}
-            attach="material"
-            distort={0.3}
-            speed={2}
-            roughness={0.4}
-            metalness={0.1}
+        {/* Outer glow ring */}
+        <mesh 
+          ref={glowRef}
+          onPointerOver={() => setHovered(true)}
+          onPointerOut={() => setHovered(false)}
+          onClick={() => onClick(skill)}
+        >
+          <torusGeometry args={[skill.size * 0.8, 0.05, 8, 32]} />
+          <meshBasicMaterial 
+            color={skill.color} 
+            transparent 
+            opacity={0.6}
+            side={THREE.DoubleSide}
           />
         </mesh>
+
+        {/* Main sphere with neon effect */}
+        <mesh 
+          ref={meshRef}
+          onPointerOver={() => setHovered(true)}
+          onPointerOut={() => setHovered(false)}
+          onClick={() => onClick(skill)}
+          scale={hovered ? 1.2 : 1}
+        >
+          <sphereGeometry args={[skill.size * 0.4, 32, 16]} />
+          <meshStandardMaterial
+            color={skill.color}
+            emissive={skill.color}
+            emissiveIntensity={hovered ? 0.8 : 0.3}
+            roughness={0.1}
+            metalness={0.9}
+            transparent
+            opacity={0.9}
+          />
+        </mesh>
+
+        {/* Inner glow sphere */}
+        <mesh scale={hovered ? 1.4 : 1.2}>
+          <sphereGeometry args={[skill.size * 0.4, 32, 16]} />
+          <meshBasicMaterial
+            color={skill.color}
+            transparent
+            opacity={hovered ? 0.4 : 0.2}
+            side={THREE.BackSide}
+          />
+        </mesh>
+
+        {/* Particle ring */}
+        {Array.from({ length: 8 }).map((_, i) => {
+          const angle = (i / 8) * Math.PI * 2;
+          const x = Math.cos(angle) * skill.size * 0.9;
+          const z = Math.sin(angle) * skill.size * 0.9;
+          
+          return (
+            <mesh key={i} position={[x, 0, z]}>
+              <sphereGeometry args={[0.02, 8, 8]} />
+              <meshBasicMaterial 
+                color={skill.color} 
+                transparent 
+                opacity={0.8}
+              />
+            </mesh>
+          );
+        })}
+
+        {/* Skill name with neon glow */}
         <Text
           ref={textRef}
-          position={[0, skill.size * 0.7, 0]}
-          fontSize={0.3}
+          position={[0, skill.size * 0.9, 0]}
+          fontSize={hovered ? 0.35 : 0.28}
           color="white"
           anchorX="center"
           anchorY="middle"
-          outlineWidth={0.02}
-          outlineColor="black"
+          outlineWidth={0.03}
+          outlineColor={skill.color}
+          outlineOpacity={0.8}
         >
           {skill.name}
         </Text>
+
+        {/* Floating particles around sphere */}
+        {hovered && Array.from({ length: 6 }).map((_, i) => (
+          <Float key={`particle-${i}`} speed={4} rotationIntensity={0.5} floatIntensity={2}>
+            <mesh position={[
+              (Math.random() - 0.5) * skill.size * 2,
+              (Math.random() - 0.5) * skill.size * 2,
+              (Math.random() - 0.5) * skill.size * 2
+            ]}>
+              <sphereGeometry args={[0.03, 8, 8]} />
+              <meshBasicMaterial 
+                color={skill.color} 
+                transparent 
+                opacity={0.6}
+              />
+            </mesh>
+          </Float>
+        ))}
       </group>
     </Float>
   );
 }
 
 function ConnectionLines() {
+  const lineRefs = useRef<THREE.Line[]>([]);
+  
   const connections = useMemo(() => {
     const lines = [];
     
@@ -101,17 +189,33 @@ function ConnectionLines() {
             (skill1.category === "frontend" && skill2.category === "backend") ||
             (skill1.category === "backend" && skill2.category === "database") ||
             (skill1.category === "monitoring" && skill2.category === "privacy")) {
-          lines.push([skill1.position, skill2.position]);
+          lines.push([skill1.position, skill2.position, skill1.color]);
         }
       }
     }
     return lines;
   }, []);
 
+  useFrame((state) => {
+    lineRefs.current.forEach((line, index) => {
+      if (line && line.material) {
+        const material = line.material as THREE.LineBasicMaterial;
+        // Animated opacity for flowing effect
+        const opacity = (Math.sin(state.clock.elapsedTime * 2 + index * 0.5) + 1) * 0.2;
+        material.opacity = opacity;
+      }
+    });
+  });
+
   return (
     <>
       {connections.map((connection, index) => (
-        <line key={index}>
+        <line 
+          key={index}
+          ref={(ref) => {
+            if (ref) lineRefs.current[index] = ref;
+          }}
+        >
           <bufferGeometry>
             <bufferAttribute
               attach="attributes-position"
@@ -121,40 +225,101 @@ function ConnectionLines() {
               ]), 3]}
             />
           </bufferGeometry>
-          <lineBasicMaterial color="#444444" opacity={0.3} transparent />
+          <lineBasicMaterial 
+            color={connection[2]} 
+            opacity={0.4} 
+            transparent 
+            linewidth={2}
+          />
         </line>
       ))}
     </>
   );
 }
 
-export default function SkillsVisualization() {
+export default function SkillsVisualization({ onSkillClick }: { onSkillClick?: (skill: SkillNode) => void }) {
+  const [selectedSkill, setSelectedSkill] = useState<SkillNode | null>(null);
+
+  const handleSkillClick = (skill: SkillNode) => {
+    setSelectedSkill(skill);
+    onSkillClick?.(skill);
+  };
+
   return (
-    <div className="w-full h-[600px] bg-gradient-to-br from-slate-900 to-black rounded-lg overflow-hidden">
-      <Canvas camera={{ position: [0, 0, 8], fov: 75 }}>
-        <ambientLight intensity={0.2} />
-        <pointLight position={[10, 10, 10]} intensity={0.5} />
-        <pointLight position={[-10, -10, -10]} intensity={0.3} color="#4F46E5" />
+    <div className="w-full h-[600px] bg-gradient-to-br from-black via-purple-900/20 to-slate-900 rounded-lg overflow-hidden relative">
+      {/* Neon border effect */}
+      <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-cyan-500/20 p-[2px]">
+        <div className="w-full h-full bg-gradient-to-br from-black via-purple-900/20 to-slate-900 rounded-lg" />
+      </div>
+      
+      <Canvas 
+        camera={{ position: [0, 0, 8], fov: 75 }}
+        gl={{ antialias: true, alpha: true }}
+      >
+        {/* Enhanced lighting for neon effect */}
+        <ambientLight intensity={0.1} />
+        <pointLight position={[10, 10, 10]} intensity={0.8} color="#60A5FA" />
+        <pointLight position={[-10, -10, -10]} intensity={0.6} color="#A855F7" />
+        <pointLight position={[0, 10, -10]} intensity={0.4} color="#06B6D4" />
+        <spotLight
+          position={[0, 20, 0]}
+          angle={0.3}
+          penumbra={1}
+          intensity={0.5}
+          color="#8B5CF6"
+          target-position={[0, 0, 0]}
+        />
+        
+        {/* Fog for depth */}
+        <fog attach="fog" args={["#000000", 8, 25]} />
         
         <ConnectionLines />
         
         {skillsData.map((skill, index) => (
-          <SkillSphere key={index} skill={skill} />
+          <SkillSphere 
+            key={index} 
+            skill={skill} 
+            onClick={handleSkillClick}
+          />
         ))}
         
         <OrbitControls 
           enableZoom={true} 
           enablePan={false} 
           maxDistance={15}
-          minDistance={5}
+          minDistance={3}
           autoRotate={true}
-          autoRotateSpeed={0.5}
+          autoRotateSpeed={0.3}
+          dampingFactor={0.05}
+          enableDamping={true}
         />
       </Canvas>
       
-      <div className="absolute bottom-4 left-4 text-white/70 text-sm">
-        <p>Interactive 3D Skills Visualization</p>
-        <p className="text-xs">Drag to rotate • Scroll to zoom</p>
+      {/* Enhanced info overlay */}
+      <div className="absolute bottom-4 left-4 text-white/70 text-sm backdrop-blur-sm bg-black/20 p-3 rounded-lg border border-blue-500/20">
+        <p className="font-semibold text-blue-400">Interactive 3D Skills Matrix</p>
+        <p className="text-xs mt-1">Drag to rotate • Scroll to zoom • Click skills for details</p>
+        {selectedSkill && (
+          <p className="text-xs mt-2 text-cyan-400">
+            Selected: <span className="font-semibold">{selectedSkill.name}</span>
+          </p>
+        )}
+      </div>
+
+      {/* Floating particles overlay */}
+      <div className="absolute inset-0 pointer-events-none">
+        {Array.from({ length: 15 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-blue-400 rounded-full opacity-30 animate-pulse"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              boxShadow: "0 0 10px currentColor",
+            }}
+          />
+        ))}
       </div>
     </div>
   );

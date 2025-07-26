@@ -7,8 +7,10 @@ import { Spotlight } from "@/components/ui/spotlight";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowDown, Github, Linkedin, Mail } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const HeroSection = () => {
+  const { theme } = useTheme();
   const professionalSummary = "Full-stack developer with 7+ years of experience, currently leading UI initiatives at PayPal. Specialized in React, Node.js, TypeScript, and Java backend, with strong knowledge in MongoDB, SQL, and privacy-first design.";
 
   const scrollToNext = () => {
@@ -32,12 +34,27 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
+          className="mb-4"
+        >
+          <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-400 px-3 py-2 text-xs sm:text-sm">
+            <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
+            <span className="whitespace-nowrap">Available for new opportunities</span>
+          </Badge>
+        </motion.div>
+
+        {/* Name */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
           className="mb-8"
         >
-          <Badge variant="outline" className="bg-green-500/10 border-green-500/20 text-green-400 px-4 py-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
-            Available for new opportunities
-          </Badge>
+          <h2 className="text-2xl md:text-3xl font-medium text-gray-300">
+            Hi, I'm{" "}
+            <span className={`bg-gradient-to-r ${theme.accent} bg-clip-text text-transparent font-bold`}>
+              Mithun M
+            </span>
+          </h2>
         </motion.div>
 
         {/* Main Heading */}
@@ -50,7 +67,7 @@ const HeroSection = () => {
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent leading-tight">
             Full-Stack
             <br />
-            <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-cyan-400 bg-clip-text text-transparent">
+            <span className={`bg-gradient-to-r ${theme.accent} bg-clip-text text-transparent`}>
               Developer
             </span>
           </h1>
@@ -63,8 +80,8 @@ const HeroSection = () => {
           transition={{ duration: 0.7, delay: 0.4 }}
           className="mb-8"
         >
-          <p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto">
-            Privacy Engineering • OpenTelemetry • Enterprise Solutions
+          <p className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto lg:mx-0">
+            Privacy Engineering • Enterprise Solutions
           </p>
         </motion.div>
 
@@ -90,7 +107,7 @@ const HeroSection = () => {
         >
           <Button 
             size="lg" 
-            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0 px-8 py-4 text-lg font-semibold transition-all duration-300 transform hover:scale-105"
+            className={`bg-gradient-to-r ${theme.primary} text-white border-0 px-8 py-4 text-lg font-semibold transition-all duration-300 transform hover:scale-105`}
             onClick={() => document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" })}
           >
             View My Work
@@ -113,9 +130,9 @@ const HeroSection = () => {
           className="flex justify-center space-x-6 mb-16"
         >
           {[
-            { icon: Github, href: "#", label: "GitHub" },
-            { icon: Linkedin, href: "#", label: "LinkedIn" },
-            { icon: Mail, href: "#", label: "Email" },
+            { icon: Github, href: "https://github.com/mithun9421", label: "GitHub" },
+            { icon: Linkedin, href: "https://www.linkedin.com/in/mithun-muraleedharan/", label: "LinkedIn" },
+            { icon: Mail, href: "mailto:mithunmuralee94@gmail.com", label: "Email" },
           ].map((social) => (
             <motion.a
               key={social.label}
