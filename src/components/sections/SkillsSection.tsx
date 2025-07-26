@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import { SectionTransition } from "@/components/ui/page-transition";
 import { Card, CardContent } from "@/components/ui/card";
@@ -60,7 +60,6 @@ const skillCategories: SkillCategory[] = [
 ];
 
 const SkillsSection = () => {
-  const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const { theme } = useTheme();
 
   return (

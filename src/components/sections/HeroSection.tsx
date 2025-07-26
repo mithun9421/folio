@@ -50,7 +50,7 @@ const HeroSection = () => {
           className="mb-8"
         >
           <h2 className="text-2xl md:text-3xl font-medium text-gray-300">
-            Hi, I'm{" "}
+            Hi, I&apos;m{" "}
             <span className={`bg-gradient-to-r ${theme.accent} bg-clip-text text-transparent font-bold`}>
               Mithun M
             </span>

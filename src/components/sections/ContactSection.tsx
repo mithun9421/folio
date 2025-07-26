@@ -187,7 +187,7 @@ const ContactSection = () => {
                   Connect With Me
                 </h3>
                 <p className="text-gray-400 text-sm leading-relaxed">
-                  Let's discuss opportunities, collaborations, or chat about
+                  Let&apos;s discuss opportunities, collaborations, or chat about
                   privacy engineering and observability.
                 </p>
               </div>

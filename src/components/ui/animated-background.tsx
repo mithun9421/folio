@@ -5,7 +5,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 
 export const AnimatedBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { theme, currentTheme } = useTheme();
+  const { currentTheme } = useTheme();
 
   // Theme-specific color palettes
   const getThemeColors = (themeName: string) => {
@@ -87,8 +87,8 @@ export const AnimatedBackground = () => {
       maxLife: number;
 
       constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+        this.x = Math.random() * (canvas?.width || 800);
+        this.y = Math.random() * (canvas?.height || 600);
         this.vx = (Math.random() - 0.5) * 0.5;
         this.vy = (Math.random() - 0.5) * 0.5;
         this.size = Math.random() * 2 + 1;
@@ -115,15 +115,16 @@ export const AnimatedBackground = () => {
         }
 
         // Reset particle if it goes off screen or dies
-        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height || this.life >= this.maxLife) {
-          this.x = Math.random() * canvas.width;
-          this.y = Math.random() * canvas.height;
+        if (this.x < 0 || this.x > (canvas?.width || 800) || this.y < 0 || this.y > (canvas?.height || 600) || this.life >= this.maxLife) {
+          this.x = Math.random() * (canvas?.width || 800);
+          this.y = Math.random() * (canvas?.height || 600);
           this.life = 0;
           this.color = this.getRandomColor();
         }
       }
 
       draw() {
+        if (!ctx) return;
         ctx.save();
         ctx.globalAlpha = this.alpha;
         ctx.fillStyle = `rgba(${this.color}, ${this.alpha})`;
@@ -144,6 +145,7 @@ export const AnimatedBackground = () => {
     let animationId: number;
 
     const animate = () => {
+      if (!ctx || !canvas) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Draw connections between nearby particles
@@ -153,7 +155,7 @@ export const AnimatedBackground = () => {
           const dy = particle.y - otherParticle.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
-          if (distance < 150) {
+          if (distance < 150 && ctx) {
             ctx.save();
             ctx.strokeStyle = `rgba(${themeColors.connections}, ${0.1 * (1 - distance / 150)})`;
             ctx.lineWidth = 1;
@@ -178,8 +180,10 @@ export const AnimatedBackground = () => {
     animate();
 
     const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
     };
 
     window.addEventListener("resize", handleResize);
